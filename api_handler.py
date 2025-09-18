@@ -88,7 +88,7 @@ def trim_conversation_history(conversation_history):
     conversation_history.clear()
     conversation_history.extend(system_msgs + other_msgs)
 
-    def stream_openai_response(user_message: str, conversation_history):
+def stream_openai_response(user_message: str, conversation_history):
     # Add the user message to conversation history
     conversation_history.append({"role": "user", "content": user_message})
     

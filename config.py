@@ -20,4 +20,4 @@ prompt_session = PromptSession(
 
 # Configure OpenAI client
 client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"),
+    api_key=os.getenv("OPENAI_API_KEY"),)

@@ -87,7 +87,7 @@ def is_binary_file(file_path: str, peek_size: int = 1024) -> bool:
         # If we fail to read, just treat it as binary to be safe
         return True
 
-        def add_directory_to_conversation(directory_path: str, conversation_history):
+def add_directory_to_conversation(directory_path: str, conversation_history):
     """Add all files in a directory to the conversation context."""
     excluded_files = {
         # Python specific
@@ -197,7 +197,7 @@ def is_binary_file(file_path: str, peek_size: int = 1024) -> bool:
                 console.print(f"  [dim]... and {len(skipped_files) - 10} more[/dim]")
         console.print()
 
-        def ensure_file_in_context(file_path: str, conversation_history) -> bool:
+def ensure_file_in_context(file_path: str, conversation_history) -> bool:
     try:
         normalized_path = normalize_path(file_path)
         content = read_local_file(normalized_path)
@@ -211,3 +211,4 @@ def is_binary_file(file_path: str, peek_size: int = 1024) -> bool:
     except OSError:
         console.print(f"[bold red]✗[/bold red] Could not read file '[bright_cyan]{file_path}[/bright_cyan]' for editing context")
         return False
+
