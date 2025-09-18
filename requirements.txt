@@ -1,0 +1,9 @@
+# Core AI and API dependencies
+openai
+pydantic
+python-dotenv
+
+# UI and terminal interaction
+rich
+prompt-toolkit
+
