@@ -196,3 +196,18 @@ def is_binary_file(file_path: str, peek_size: int = 1024) -> bool:
             if len(skipped_files) > 10:
                 console.print(f"  [dim]... and {len(skipped_files) - 10} more[/dim]")
         console.print()
+
+        def ensure_file_in_context(file_path: str, conversation_history) -> bool:
+    try:
+        normalized_path = normalize_path(file_path)
+        content = read_local_file(normalized_path)
+        file_marker = f"Content of file '{normalized_path}'"
+        if not any(file_marker in msg["content"] for msg in conversation_history):
+            conversation_history.append({
+                "role": "system",
+                "content": f"{file_marker}:\n\n{content}"
+            })
+        return True
+    except OSError:
+        console.print(f"[bold red]✗[/bold red] Could not read file '[bright_cyan]{file_path}[/bright_cyan]' for editing context")
+        return False
