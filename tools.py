@@ -90,7 +90,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "edit_file",
-            "description": "Edit an existing file by replacing a specific snippet with new content or adding new lines of code. ALWAYS use this function when the user asks you to edit, modify, or add content to files.",
+            "description": "Edit an existing file by replacing a specific snippet with new content or adding new lines of code. ALWAYS use this function when the user asks you to edit, modify, or add content to files. EXECUTE IMMEDIATELY after reading a file - do not describe what you plan to do, just do it.",
             "parameters": {
                 "type": "object",
                 "properties": {

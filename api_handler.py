@@ -14,8 +14,17 @@ from file_operations import (
 def execute_function_call_dict(tool_call_dict, conversation_history) -> str:
     """Execute a function call from a dictionary format and return the result as a string."""
     try:
-        function_name = tool_call_dict["function"]["name"]
-        arguments = json.loads(tool_call_dict["function"]["arguments"])
+        # Debug: Print the tool call structure
+        console.print(f"[dim]Debug: Tool call structure: {tool_call_dict}[/dim]")
+        function_name = tool_call_dict.get("function", {}).get("name")
+        if not function_name:
+            return "Error: No function name provided in tool call"
+        
+        arguments_str = tool_call_dict.get("function", {}).get("arguments", "{}")
+        try:
+            arguments = json.loads(arguments_str)
+        except json.JSONDecodeError as e:
+            return f"Error parsing function arguments: {str(e)}"
         
         if function_name == "read_file":
             file_path = arguments["file_path"]
@@ -63,12 +72,25 @@ def execute_function_call_dict(tool_call_dict, conversation_history) -> str:
                 apply_diff_edit(file_path, original_snippet, new_snippet)
                 return f"Successfully edited file '{file_path}'"
             except Exception as e:
-                return f"Error editing file '{file_path}': {str(e)}"
+                # Provide more detailed error information
+                error_details = f"Error editing file '{file_path}': {str(e)}"
+                console.print(f"[bold red]✗[/bold red] {error_details}")
+                
+                # Show the actual file content for debugging
+                try:
+                    current_content = read_local_file(file_path)
+                    console.print("\n[bold blue]Current file content:[/bold blue]")
+                    console.print(Panel(current_content, title="Current Content", border_style="yellow", title_align="left"))
+                except Exception as read_error:
+                    console.print(f"[dim]Could not read file for debugging: {read_error}[/dim]")
+                
+                return error_details
             
         else:
             return f"Unknown function: {function_name}"
             
     except Exception as e:
+        function_name = tool_call_dict.get("function", {}).get("name", "unknown")
         return f"Error executing {function_name}: {str(e)}"
 
 def trim_conversation_history(conversation_history):
@@ -104,7 +126,7 @@ def stream_openai_response(user_message: str, conversation_history):
             stream=True
         )
 
-        console.print("\n[bold bright_blue]🐋 Seeking...[/bold bright_blue]")
+        console.print("\n[bold #9333ea]✨ Thinking...[/bold #9333ea]")
         reasoning_started = False
         final_content = ""
         tool_calls = []
@@ -113,13 +135,13 @@ def stream_openai_response(user_message: str, conversation_history):
             # Handle reasoning content if available
             if hasattr(chunk.choices[0].delta, 'reasoning_content') and chunk.choices[0].delta.reasoning_content:
                 if not reasoning_started:
-                    console.print("\n[bold blue]💭 Reasoning:[/bold blue]")
+                    console.print("\n[bold #c084fc]💭 Reasoning:[/bold #c084fc]")
                     reasoning_started = True
                 console.print(chunk.choices[0].delta.reasoning_content, end="")
             elif chunk.choices[0].delta.content:
                 if reasoning_started:
                     console.print("\n")  # Add spacing after reasoning
-                    console.print("\n[bold bright_blue]🤖 Assistant>[/bold bright_blue] ", end="")
+                    console.print("\n[bold #f472b6]🤖 Assistant>[/bold #f472b6] ", end="")
                     reasoning_started = False
                 final_content += chunk.choices[0].delta.content
                 console.print(chunk.choices[0].delta.content, end="")
@@ -177,12 +199,18 @@ def stream_openai_response(user_message: str, conversation_history):
                 conversation_history.append(assistant_message)
                 
                 # Execute tool calls and add results immediately
-                console.print(f"\n[bold bright_cyan]⚡ Executing {len(formatted_tool_calls)} function call(s)...[/bold bright_cyan]")
-                for tool_call in formatted_tool_calls:
-                    console.print(f"[bright_blue]→ {tool_call['function']['name']}[/bright_blue]")
+                console.print(f"\n[bold #9333ea]⚡ Executing {len(formatted_tool_calls)} function call(s)...[/bold #9333ea]")
+                for i, tool_call in enumerate(formatted_tool_calls):
+                    console.print(f"[#f472b6]→ {tool_call['function']['name']}[/#f472b6]")
                     
                     try:
                         result = execute_function_call_dict(tool_call, conversation_history)
+                        
+                        # Check if the result indicates an error
+                        if "Error" in result or "error" in result.lower():
+                            console.print(f"[bold #ef4444]✗[/bold #ef4444] {result}")
+                        else:
+                            console.print(f"[bold #10b981]✓[/bold #10b981] {result}")
                         
                         # Add tool result to conversation immediately
                         tool_response = {
@@ -192,7 +220,8 @@ def stream_openai_response(user_message: str, conversation_history):
                         }
                         conversation_history.append(tool_response)
                     except Exception as e:
-                        console.print(f"[red]Error executing {tool_call['function']['name']}: {e}[/red]")
+                        error_msg = f"Error executing {tool_call['function']['name']}: {e}"
+                        console.print(f"[bold #ef4444]✗[/bold #ef4444] {error_msg}")
                         # Still need to add a tool response even on error
                         conversation_history.append({
                             "role": "tool",
@@ -201,7 +230,7 @@ def stream_openai_response(user_message: str, conversation_history):
                         })
                 
                 # Get follow-up response after tool execution
-                console.print("\n[bold bright_blue]🔄 Processing results...[/bold bright_blue]")
+                console.print("\n[bold #9333ea]🔄 Processing results...[/bold #9333ea]")
                 
                 follow_up_stream = client.chat.completions.create(
                     model="gpt-4o",
@@ -218,13 +247,13 @@ def stream_openai_response(user_message: str, conversation_history):
                     # Handle reasoning content if available
                     if hasattr(chunk.choices[0].delta, 'reasoning_content') and chunk.choices[0].delta.reasoning_content:
                         if not reasoning_started:
-                            console.print("\n[bold blue]💭 Reasoning:[/bold blue]")
+                            console.print("\n[bold #c084fc]💭 Reasoning:[/bold #c084fc]")
                             reasoning_started = True
                         console.print(chunk.choices[0].delta.reasoning_content, end="")
                     elif chunk.choices[0].delta.content:
                         if reasoning_started:
                             console.print("\n")
-                            console.print("\n[bold bright_blue]🤖 Assistant>[/bold bright_blue] ", end="")
+                            console.print("\n[bold #f472b6]🤖 Assistant>[/bold #f472b6] ", end="")
                             reasoning_started = False
                         follow_up_content += chunk.choices[0].delta.content
                         console.print(chunk.choices[0].delta.content, end="")
@@ -244,5 +273,5 @@ def stream_openai_response(user_message: str, conversation_history):
 
     except Exception as e:
         error_msg = f"OpenAI API error: {str(e)}"
-        console.print(f"\n[bold red]❌ {error_msg}[/bold red]")
+        console.print(f"\n[bold #ef4444]❌ {error_msg}[/bold #ef4444]")
         return {"error": error_msg}

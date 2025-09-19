@@ -30,7 +30,7 @@ def create_file(path: str, content: str):
     file_path.parent.mkdir(parents=True, exist_ok=True)
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
-    console.print(f"[bold blue]✓[/bold blue] Created/updated file at '[bright_cyan]{file_path}[/bright_cyan]'")
+    console.print(f"[bold #10b981]✓[/bold #10b981] Created/updated file at '[#f472b6]{file_path}[/#f472b6]'")
 
 def apply_diff_edit(path: str, original_snippet: str, new_snippet: str):
     """Reads the file at 'path', replaces the first occurrence of 'original_snippet' with 'new_snippet', then overwrites."""
@@ -42,28 +42,48 @@ def apply_diff_edit(path: str, original_snippet: str, new_snippet: str):
         if occurrences == 0:
             # Try to find a close match with some tolerance
             lines = content.split('\n')
-            for i, line in enumerate(lines):
-                if original_snippet.strip() in line.strip():
-                    console.print(f"[bold yellow]⚠ Found similar content at line {i+1}[/bold yellow]")
-                    console.print(f"[dim]Original: {line.strip()}[/dim]")
-                    console.print(f"[dim]Looking for: {original_snippet.strip()}[/dim]")
-                    break
-            raise ValueError("Original snippet not found")
+            console.print(f"[bold #f59e0b]⚠ Original snippet not found exactly. Searching for similar content...[/bold #f59e0b]")
+            
+            # Try multi-line matching
+            original_lines = original_snippet.strip().split('\n')
+            best_match_line = -1
+            best_match_score = 0
+            
+            for i in range(len(lines) - len(original_lines) + 1):
+                match_score = 0
+                for j, orig_line in enumerate(original_lines):
+                    if i + j < len(lines) and orig_line.strip() in lines[i + j].strip():
+                        match_score += 1
+                
+                if match_score > best_match_score:
+                    best_match_score = match_score
+                    best_match_line = i
+            
+            if best_match_score > 0:
+                console.print(f"[bold #f59e0b]⚠ Found partial match starting at line {best_match_line + 1}[/bold #f59e0b]")
+                console.print(f"[#6b7280]Match score: {best_match_score}/{len(original_lines)} lines[/#6b7280]")
+                console.print(f"[#6b7280]Looking for: {original_snippet.strip()}[/#6b7280]")
+                console.print(f"[#6b7280]Found around line {best_match_line + 1}: {lines[best_match_line].strip() if best_match_line < len(lines) else 'N/A'}[/#6b7280]")
+            
+            raise ValueError(f"Original snippet not found. Best match score: {best_match_score}/{len(original_lines)}")
+        
         if occurrences > 1:
-            console.print(f"[bold yellow]⚠ Multiple matches ({occurrences}) found - using first occurrence[/bold yellow]")
+            console.print(f"[bold #f59e0b]⚠ Multiple matches ({occurrences}) found - using first occurrence[/bold #f59e0b]")
         
         updated_content = content.replace(original_snippet, new_snippet, 1)
         create_file(path, updated_content)
-        console.print(f"[bold blue]✓[/bold blue] Applied diff edit to '[bright_cyan]{path}[/bright_cyan]'")
+        console.print(f"[bold #10b981]✓[/bold #10b981] Applied diff edit to '[#f472b6]{path}[/#f472b6]'")
 
     except FileNotFoundError:
-        console.print(f"[bold red]✗[/bold red] File not found for diff editing: '[bright_cyan]{path}[/bright_cyan]'")
+        console.print(f"[bold #ef4444]✗[/bold #ef4444] File not found for diff editing: '[#f472b6]{path}[/#f472b6]'")
+        raise
     except ValueError as e:
-        console.print(f"[bold yellow]⚠[/bold yellow] {str(e)} in '[bright_cyan]{path}[/bright_cyan]'. No changes made.")
-        console.print("\n[bold blue]Expected snippet:[/bold blue]")
-        console.print(Panel(original_snippet, title="Expected", border_style="blue", title_align="left"))
-        console.print("\n[bold blue]Actual file content:[/bold blue]")
-        console.print(Panel(content, title="Actual", border_style="yellow", title_align="left"))
+        console.print(f"[bold #f59e0b]⚠[/bold #f59e0b] {str(e)} in '[#f472b6]{path}[/#f472b6]'. No changes made.")
+        console.print("\n[bold #c084fc]Expected snippet:[/bold #c084fc]")
+        console.print(Panel(original_snippet, title="Expected", border_style="#9333ea", title_align="left"))
+        console.print("\n[bold #c084fc]Actual file content:[/bold #c084fc]")
+        console.print(Panel(content, title="Actual", border_style="#f59e0b", title_align="left"))
+        raise
 
 def normalize_path(path_str: str) -> str:
     """Return a canonical, absolute version of the path with security checks."""
@@ -184,17 +204,17 @@ def add_directory_to_conversation(directory_path: str, conversation_history):
                 except OSError:
                     skipped_files.append(full_path)
 
-        console.print(f"[bold blue]✓[/bold blue] Added folder '[bright_cyan]{directory_path}[/bright_cyan]' to conversation.")
+        console.print(f"[bold #10b981]✓[/bold #10b981] Added folder '[#f472b6]{directory_path}[/#f472b6]' to conversation.")
         if added_files:
-            console.print(f"\n[bold bright_blue]📁 Added files:[/bold bright_blue] [dim]({len(added_files)} of {total_files_processed})[/dim]")
+            console.print(f"\n[bold #9333ea]📁 Added files:[/bold #9333ea] [#6b7280]({len(added_files)} of {total_files_processed})[/#6b7280]")
             for f in added_files:
-                console.print(f"  [bright_cyan]📄 {f}[/bright_cyan]")
+                console.print(f"  [#f472b6]📄 {f}[/#f472b6]")
         if skipped_files:
-            console.print(f"\n[bold yellow]⏭ Skipped files:[/bold yellow] [dim]({len(skipped_files)})[/dim]")
+            console.print(f"\n[bold #f59e0b]⏭ Skipped files:[/bold #f59e0b] [#6b7280]({len(skipped_files)})[/#6b7280]")
             for f in skipped_files[:10]:  # Show only first 10 to avoid clutter
-                console.print(f"  [yellow dim]⚠ {f}[/yellow dim]")
+                console.print(f"  [#f59e0b dim]⚠ {f}[/#f59e0b dim]")
             if len(skipped_files) > 10:
-                console.print(f"  [dim]... and {len(skipped_files) - 10} more[/dim]")
+                console.print(f"  [#6b7280]... and {len(skipped_files) - 10} more[/#6b7280]")
         console.print()
 
 def ensure_file_in_context(file_path: str, conversation_history) -> bool:
@@ -202,13 +222,13 @@ def ensure_file_in_context(file_path: str, conversation_history) -> bool:
         normalized_path = normalize_path(file_path)
         content = read_local_file(normalized_path)
         file_marker = f"Content of file '{normalized_path}'"
-        if not any(file_marker in msg["content"] for msg in conversation_history):
+        if not any((isinstance(msg.get("content"), str) and file_marker in msg["content"]) for msg in conversation_history):
             conversation_history.append({
                 "role": "system",
                 "content": f"{file_marker}:\n\n{content}"
             })
         return True
     except OSError:
-        console.print(f"[bold red]✗[/bold red] Could not read file '[bright_cyan]{file_path}[/bright_cyan]' for editing context")
+        console.print(f"[bold #ef4444]✗[/bold #ef4444] Could not read file '[#f472b6]{file_path}[/#f472b6]' for editing context")
         return False
 
