@@ -2,7 +2,7 @@
 
 MiniCoder is a powerful AI-powered coding assistant that provides an interactive terminal interface for seamless code development. It integrates with OpenAI's advanced reasoning models to offer intelligent file operations, code analysis, and development assistance through natural conversation and function calling.
 
-![MiniCoder Welcome Screen](images/minicoder-welcome-screen.png)
+![MiniCoder Welcome Screen](images/welcome-screen.png)
 
 ## Overview
 
