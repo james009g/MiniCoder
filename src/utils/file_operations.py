@@ -1,9 +1,7 @@
-
-
 import os
 from pathlib import Path
 from rich.panel import Panel
-from config import console
+from src.core.config import console
 
 # --------------------------------------------------------------------------------
 # File Operations
@@ -231,4 +229,3 @@ def ensure_file_in_context(file_path: str, conversation_history) -> bool:
     except OSError:
         console.print(f"[bold #ef4444]✗[/bold #ef4444] Could not read file '[#f472b6]{file_path}[/#f472b6]' for editing context")
         return False
-

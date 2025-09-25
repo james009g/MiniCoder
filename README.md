@@ -13,9 +13,7 @@ MiniCoder leverages the power of GPT-4o to provide an intuitive coding assistant
 ## 🚀 Key Features
 
 ### 🧠 AI Capabilities
-- **Elite Software Engineering**: Decades of experience across all programming domains
 - **Chain of Thought Reasoning**: Visible thought process before providing solutions
-- **Code Analysis & Discussion**: Expert-level insights and optimization suggestions
 - **Intelligent Problem Solving**: Automatic file reading and context understanding
 
 ### 🛠️ Function Calling Tools
@@ -174,6 +172,28 @@ You> Now review this codebase structure
 - **OpenAI GPT-4o**
 - Visible reasoning with Chain-of-Thought capabilities
 - Enhanced problem-solving capabilities
+
+### Project Structure
+```
+MiniCoder/
+├── src/                      # Source code directory
+│   ├── core/                 # Core functionality
+│   │   ├── models.py         # Data models
+│   │   └── config.py         # Configuration
+│   ├── ui/                   # UI related code
+│   │   └── console.py        # Console UI components
+│   ├── api/                  # API handling
+│   │   └── handler.py        # API handler
+│   ├── tools/                # Tool definitions
+│   │   └── definitions.py    # Tool definitions
+│   └── utils/                # Utilities
+│       └── file_operations.py # File operations
+├── main.py                   # Entry point
+├── images/                   # Images directory
+├── README.md                 # Documentation
+├── requirements.txt          # Dependencies
+└── LICENSE                   # License file
+```
 
 ### Function Call Execution Flow
 1. User Input → Natural language request

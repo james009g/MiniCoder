@@ -1,8 +1,8 @@
 import json
 import time
-from config import client, console
-from tools import tools
-from file_operations import (
+from src.core.config import client, console
+from src.tools.definitions import tools
+from src.utils.file_operations import (
     read_local_file, normalize_path, create_file, 
     apply_diff_edit, ensure_file_in_context
 )
